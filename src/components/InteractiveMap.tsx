@@ -11,6 +11,7 @@ import FixCoordinatesButton from './FixCoordinatesButton';
 import { getTodayInPacific, formatTimeInPacific, getNowInPacific, formatInPacific } from '@/lib/timezone';
 import { debugTimezone } from '@/utils/debug-timezone';
 
+
 interface ServiceLocation {
   id: string;
   name: string;
@@ -37,34 +38,23 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const isMobile = useIsMobile();
 
-  // Set Mapbox token directly (public tokens are safe in frontend)
+  // Fetch Mapbox token from edge function
   useEffect(() => {
-    const token = 'pk.eyJ1IjoiZGFubnlib2RuZXIyMSIsImEiOiJjbWR4c284c3AwMHBvMnFvY2d3ZG56c2trIn0.DTkg6AdtTFrtUBVKsyd4yw';
-    
-    // Validate token format
-    if (!token.startsWith('pk.')) {
-      console.error('❌ Invalid Mapbox token format - must start with "pk."');
-      return;
-    }
-    
-    console.log('🔑 Setting Mapbox token:', token.substring(0, 20) + '...');
-    
-    // Test token validity by making a simple API call
-    fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${token}`)
-      .then(response => {
-        console.log('🧪 Token test response status:', response.status);
-        if (response.status === 401) {
-          console.error('❌ Mapbox token is invalid or expired');
-        } else if (response.status === 200) {
-          console.log('✅ Mapbox token is valid');
-        }
-      })
-      .catch(error => {
-        console.error('❌ Error testing Mapbox token:', error);
-      });
-    
-    mapboxgl.accessToken = token; // Set global access token
-    setMapboxToken(token);
+    const fetchMapboxToken = async () => {
+      console.log('Fetching Mapbox token...');
+      try {
+        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        console.log('Mapbox token response:', { data, error });
+        if (error) throw error;
+        const token = data?.token || '';
+        console.log('Setting Mapbox token:', token ? 'Token received' : 'No token received');
+        setMapboxToken(token);
+      } catch (error) {
+        console.error('Failed to fetch Mapbox token:', error);
+        // No fallback - require proper token configuration
+      }
+    };
+    fetchMapboxToken();
   }, []);
 
   // Fetch today's services grouped by provider location
@@ -271,7 +261,6 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   }, [queryClient]);
 
   useEffect(() => {
-    console.log('=== MAP DEBUGGING ===');
     console.log('Map effect triggered:', { 
       hasContainer: !!mapContainer.current, 
       servicesLength: services.length, 
@@ -279,40 +268,30 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
       token: mapboxToken ? `${mapboxToken.substring(0, 10)}...` : 'none'
     });
     
-    if (!mapContainer.current) {
-      console.log('❌ No map container');
-      return;
-    }
-    
-    if (!services.length) {
-      console.log('❌ No services data');
-      return;
-    }
-    
-    if (!mapboxToken) {
-      console.log('❌ No mapbox token');
+    if (!mapContainer.current || !services.length || !mapboxToken) {
+      console.log('Map initialization skipped - missing requirements');
       return;
     }
 
-    console.log('✅ All requirements met, initializing map...');
-    console.log('mapboxgl object:', mapboxgl);
-    console.log('mapboxgl.accessToken:', mapboxgl.accessToken);
-    
-    try {
-      // Initialize map with proper configuration
-      map.current = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: 'mapbox://styles/mapbox/streets-v12', // Use the latest streets style
-        center: [-118.2437, 34.0522], // Center on Los Angeles
-        zoom: 10, // Closer zoom for LA area
-        accessToken: mapboxToken
-      });
+    console.log('Initializing Mapbox map...');
 
-      console.log('✅ Map created successfully:', map.current);
-    } catch (error) {
-      console.error('❌ Error creating map:', error);
-      return;
-    }
+    // ----- DLB -----
+    if (map.current) return;
+    // -------
+    
+    // Initialize map with proper configuration
+    map.current = new mapboxgl.Map({
+      container: mapContainer.current!,
+      style: 'mapbox://styles/mapbox/streets-v12', // Use the latest streets style
+      center: [-118.2437, 34.0522], // Center on Los Angeles
+      zoom: 10, // Closer zoom for LA area
+      //accessToken: mapboxToken
+      // -------DLB
+      accessToken: "pk.eyJ1IjoiZGFubnlib2RuZXIyMSIsImEiOiJjbWR4c294c3AwMHBvMnFvY2d3ZG56c2trIn0.DTkg6AdtTFrtUBVKsyd4yw",
+      // ----------
+    });
+
+    console.log('Map created successfully');
 
     // Add navigation controls
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
@@ -321,13 +300,48 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
     markersRef.current.forEach(marker => marker.remove());
     markersRef.current = [];
 
+
+
+
+
     // Create bounds to fit all markers
     const bounds = new mapboxgl.LngLatBounds();
 
+
+    // Manual coordinate overrides (commented out - use Fix Coordinates button instead)
+    // const manualFixes: Record<string, { latitude: number; longitude: number }> = {
+    //   'Service Name': { latitude: 0, longitude: 0 }
+    // };
+
     // Add markers for each service
     services.forEach(service => {
+
+        // Manual coordinate override (disabled - use Fix Coordinates button instead)
+        // if (manualFixes && manualFixes[service.name]) {
+        //   service.latitude = manualFixes[service.name].latitude;
+        //   service.longitude = manualFixes[service.name].longitude;
+        // }
+
+      // Validate coordinates are valid numbers within reasonable bounds
+      if (
+        typeof service.latitude === 'number' &&
+        typeof service.longitude === 'number' &&
+        !isNaN(service.latitude) &&
+        !isNaN(service.longitude) &&
+        service.latitude >= -90 && service.latitude <= 90 &&
+        service.longitude >= -180 && service.longitude <= 180
+      ) {
+
+        //bounds.extend([service.longitude, service.latitude]);
+        // ---------------------------
+
+        // ----- was here ------
       const markerElement = document.createElement('div');
-      markerElement.className = 'cursor-pointer';
+
+      //markerElement.className = 'relative cursor-pointer transition-transform hover:scale-110';
+
+      markerElement.className = 'cursor-pointer'; // --DLB---
+
       markerElement.innerHTML = `
         <div class="w-8 h-8 bg-primary rounded-full border-2 border-background shadow-lg flex items-center justify-center">
           <svg class="w-4 h-4 text-primary-foreground" fill="currentColor" viewBox="0 0 20 20">
@@ -335,10 +349,33 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
           </svg>
         </div>
       `;
+      // ------------------
 
+      // -----------DLB-------------------------
+      console.log('📍 Adding marker:', {
+        name: service.name,
+        lat: service.latitude,
+        lng: service.longitude
+      });
+
+      // ------------------------------------
+
+      /*
       const marker = new mapboxgl.Marker(markerElement)
         .setLngLat([service.longitude, service.latitude])
         .addTo(map.current!);
+      */
+
+        // ----- DLB ----
+        
+        const marker = new mapboxgl.Marker({
+          element: markerElement,
+          anchor: 'center'
+        })
+          .setLngLat([service.longitude, service.latitude])
+          .addTo(map.current!);
+          
+        // ------------
 
       // Add click event to marker
       markerElement.addEventListener('click', () => {
@@ -349,7 +386,13 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
       });
 
       markersRef.current.push(marker);
-      bounds.extend([service.longitude, service.latitude]);
+
+    
+
+        bounds.extend([service.longitude, service.latitude]);
+      } else {
+        console.warn("❌ Invalid coords for service:", service);
+      }
     });
 
     // Fit map to show all markers
@@ -360,9 +403,22 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
       });
     }
 
+    //return () => {
+      //map.current?.remove();
+    //};
+
+    // ----- DLB -----
     return () => {
-      map.current?.remove();
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
+    // ----------
+
+
+
+
   }, [services, onServiceClick, mapboxToken]);
 
   if (isMobile) {
@@ -377,8 +433,9 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
           </div>
         ) : (
           <>
+
             <div ref={mapContainer} className="absolute inset-0" />
-            
+
             {selectedService && (
               <div className="absolute top-2 left-2 right-2 z-10">
                 <Card className="shadow-lg">
@@ -424,6 +481,8 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
     );
   }
 
+  // /* <div ref={mapContainer} className="absolute inset-0"/> */
+
   return (
     <div className="relative w-full h-80 lg:h-96 bg-card rounded-lg overflow-hidden border shadow-sm">
       {isLoading ? (
@@ -435,7 +494,10 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
         </div>
       ) : (
         <>
-          <div ref={mapContainer} className="absolute inset-0" />
+          <div ref={mapContainer} style={{width:"100%", height:"600px", position:"relative"}}/>
+
+          
+
           
           {selectedService && (
             <div className="absolute top-4 left-4 z-10">
