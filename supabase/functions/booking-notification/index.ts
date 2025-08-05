@@ -13,7 +13,7 @@ const smtpClient = new SMTPClient({
       password: Deno.env.get("GMAIL_SMTP_PASSWORD") || "",
     },
   },
-});
+}); 
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
