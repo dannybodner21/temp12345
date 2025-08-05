@@ -103,7 +103,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     const emailResponse = await resend.emails.send({
       from: "Help Request <onboarding@resend.dev>",
-      to: ["jaclyntroth@gmail.com"],
+      to: ["dannybodner21@gmail.com"],
       subject: emailSubject,
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">

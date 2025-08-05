@@ -376,7 +376,7 @@ const ProviderDashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             {/* Admin button for specific user */}
-            {user.email === "jaclyntroth@gmail.com" && (
+            {user.email === "dannybodner21@gmail.com" && (
               <Link to="/admin-login">
                 <Button variant="outline" size="sm">
                   <Shield className="h-4 w-4 mr-2" />

@@ -204,11 +204,11 @@ export function AuthForm() {
         
         // Send admin notification for new provider signup
         try {
-          await fetch(`https://hoealuscfuqrmpzyambj.supabase.co/functions/v1/notify-new-provider`, {
+          await fetch(`https://rkqcnuosmlovfxujkkkc.supabase.co/functions/v1/notify-new-provider`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZWFsdXNjZnVxcm1wenlhbWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNzQzNTksImV4cCI6MjA2Nzg1MDM1OX0.d2gmMD5_hyyS28bRPXU3Tr6cXnkTDt7tcHkSH7Yo8UE`
+              'Authorization': `Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJrcWNudW9zbWxvdmZ4dWpra2tjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ0MTMwMDksImV4cCI6MjA2OTk4OTAwOX0.GuLLXUckBRo3QtqUFBmg3IHqYUqsIC8UYgrdptHDfaY`
             },
             body: JSON.stringify({
               user_id: authData.user.id,
