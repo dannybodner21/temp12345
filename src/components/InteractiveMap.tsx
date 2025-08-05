@@ -37,27 +37,12 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const isMobile = useIsMobile();
 
-  // Get Mapbox token from Supabase secrets
+  // Set Mapbox token directly (public tokens are safe in frontend)
   useEffect(() => {
-    const fetchMapboxToken = async () => {
-      console.log('Fetching Mapbox token...');
-      try {
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-        console.log('Mapbox token response:', { data, error });
-        
-        if (error) {
-          console.error('Edge function error:', error);
-          return;
-        }
-        
-        const token = data?.token || '';
-        console.log('Setting Mapbox token:', token ? `${token.substring(0, 15)}...` : 'No token received');
-        setMapboxToken(token);
-      } catch (error) {
-        console.error('Failed to fetch Mapbox token:', error);
-      }
-    };
-    fetchMapboxToken();
+    // You can set your Mapbox public token directly here
+    // Get it from https://account.mapbox.com/access-tokens/
+    const token = 'YOUR_MAPBOX_PUBLIC_TOKEN_HERE'; // Replace with your actual token
+    setMapboxToken(token);
   }, []);
 
   // Fetch today's services grouped by provider location
