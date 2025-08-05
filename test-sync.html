@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Sync</title>
+</head>
+<body>
+    <button onclick="triggerSync()">Trigger WrightLooks Sync</button>
+    <button onclick="triggerProcessing()">Process Synced Appointments</button>
+    <div id="result"></div>
+
+    <script>
+        async function triggerSync() {
+            try {
+                const response = await fetch('https://hoealuscfuqrmpzyambj.supabase.co/functions/v1/sync-schedule', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZWFsdXNjZnVxcm1wenlhbWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNzQzNTksImV4cCI6MjA2Nzg1MDM1OX0.d2gmMD5_hyyS28bRPXU3Tr6cXnkTDt7tcHkSH7Yo8UE'
+                    },
+                    body: JSON.stringify({
+                        provider_id: '8266286d-0ed1-4a85-a857-13ce31e527b3',
+                        platform: 'square',
+                        sync_type: 'full'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = '<h3>Sync Result:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                console.log('Sync result:', result);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Sync Error: ' + error.message;
+                console.error('Sync error:', error);
+            }
+        }
+
+        async function triggerProcessing() {
+            try {
+                const response = await fetch('https://hoealuscfuqrmpzyambj.supabase.co/functions/v1/process-synced-appointments', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhvZWFsdXNjZnVxcm1wenlhbWJqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTIyNzQzNTksImV4cCI6MjA2Nzg1MDM1OX0.d2gmMD5_hyyS28bRPXU3Tr6cXnkTDt7tcHkSH7Yo8UE'
+                    },
+                    body: JSON.stringify({
+                        provider_id: '8266286d-0ed1-4a85-a857-13ce31e527b3',
+                        platform: 'square'
+                    })
+                });
+                
+                const result = await response.json();
+                document.getElementById('result').innerHTML = '<h3>Processing Result:</h3><pre>' + JSON.stringify(result, null, 2) + '</pre>';
+                console.log('Processing result:', result);
+            } catch (error) {
+                document.getElementById('result').innerHTML = 'Processing Error: ' + error.message;
+                console.error('Processing error:', error);
+            }
+        }
+    </script>
+</body>
+</html>

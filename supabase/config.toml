@@ -1,0 +1,37 @@
+project_id = "hoealuscfuqrmpzyambj"
+
+[functions.booking-platform-oauth]
+verify_jwt = false
+
+[functions.sync-schedule]
+verify_jwt = false
+
+[functions.notify-new-provider]
+verify_jwt = false
+
+[functions.refresh-tokens]
+verify_jwt = false
+
+[functions.setmore-initial-token]
+verify_jwt = false
+
+[functions.admin-login]
+verify_jwt = false
+
+[functions.notify-new-service]
+verify_jwt = false
+
+[functions.categorize-service-ai]
+verify_jwt = true
+
+[functions.create-booking-payment]
+verify_jwt = false
+
+[functions.stripe-webhook]
+verify_jwt = false
+
+[functions.booking-notification]
+verify_jwt = false
+
+[functions.trigger-processing]
+verify_jwt = false

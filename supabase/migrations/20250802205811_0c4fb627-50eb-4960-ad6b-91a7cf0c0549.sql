@@ -1,0 +1,1 @@
+DELETE FROM service_categories WHERE id = '082aa9ce-fab7-4eba-9acb-852526ac1597';

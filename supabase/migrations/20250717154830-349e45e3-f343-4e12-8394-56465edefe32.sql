@@ -1,0 +1,1 @@
+DELETE FROM provider_square_connections WHERE provider_id = 'fd371ab6-c7b1-4181-9f0a-2d0707575eeb';
