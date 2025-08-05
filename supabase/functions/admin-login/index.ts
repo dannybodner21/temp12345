@@ -15,7 +15,7 @@ serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
-  }
+  } 
 
   try {
     const { password, email }: AdminLoginRequest = await req.json();
