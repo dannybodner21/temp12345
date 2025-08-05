@@ -47,18 +47,14 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
         
         if (error) {
           console.error('Edge function error:', error);
-          // For now, let's try a test token to see if the issue is the token or something else
-          setMapboxToken('pk.test');
           return;
         }
         
         const token = data?.token || '';
-        console.log('Setting Mapbox token:', token ? 'Token received' : 'No token received');
+        console.log('Setting Mapbox token:', token ? `${token.substring(0, 15)}...` : 'No token received');
         setMapboxToken(token);
       } catch (error) {
         console.error('Failed to fetch Mapbox token:', error);
-        // Use a test token for debugging
-        setMapboxToken('pk.test');
       }
     };
     fetchMapboxToken();
