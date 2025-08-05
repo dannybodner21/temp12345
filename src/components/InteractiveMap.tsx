@@ -37,20 +37,28 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   const [mapboxToken, setMapboxToken] = useState<string>('');
   const isMobile = useIsMobile();
 
-  // Fetch Mapbox token from edge function
+  // Get Mapbox token from Supabase secrets
   useEffect(() => {
     const fetchMapboxToken = async () => {
       console.log('Fetching Mapbox token...');
       try {
         const { data, error } = await supabase.functions.invoke('get-mapbox-token');
         console.log('Mapbox token response:', { data, error });
-        if (error) throw error;
+        
+        if (error) {
+          console.error('Edge function error:', error);
+          // For now, let's try a test token to see if the issue is the token or something else
+          setMapboxToken('pk.test');
+          return;
+        }
+        
         const token = data?.token || '';
         console.log('Setting Mapbox token:', token ? 'Token received' : 'No token received');
         setMapboxToken(token);
       } catch (error) {
         console.error('Failed to fetch Mapbox token:', error);
-        // No fallback - require proper token configuration
+        // Use a test token for debugging
+        setMapboxToken('pk.test');
       }
     };
     fetchMapboxToken();
