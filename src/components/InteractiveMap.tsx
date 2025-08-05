@@ -40,6 +40,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   // Set Mapbox token directly (public tokens are safe in frontend)
   useEffect(() => {
     const token = 'pk.eyJ1IjoiZGFubnlib2RuZXIyMSIsImEiOiJjbWR4c284c3AwMHBvMnFvY2d3ZG56c2trIn0.DTkg6AdtTFrtUBVKsyd4yw';
+    mapboxgl.accessToken = token; // Set global access token
     setMapboxToken(token);
   }, []);
 
