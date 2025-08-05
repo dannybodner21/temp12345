@@ -40,6 +40,29 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   // Set Mapbox token directly (public tokens are safe in frontend)
   useEffect(() => {
     const token = 'pk.eyJ1IjoiZGFubnlib2RuZXIyMSIsImEiOiJjbWR4c284c3AwMHBvMnFvY2d3ZG56c2trIn0.DTkg6AdtTFrtUBVKsyd4yw';
+    
+    // Validate token format
+    if (!token.startsWith('pk.')) {
+      console.error('❌ Invalid Mapbox token format - must start with "pk."');
+      return;
+    }
+    
+    console.log('🔑 Setting Mapbox token:', token.substring(0, 20) + '...');
+    
+    // Test token validity by making a simple API call
+    fetch(`https://api.mapbox.com/styles/v1/mapbox/streets-v12?access_token=${token}`)
+      .then(response => {
+        console.log('🧪 Token test response status:', response.status);
+        if (response.status === 401) {
+          console.error('❌ Mapbox token is invalid or expired');
+        } else if (response.status === 200) {
+          console.log('✅ Mapbox token is valid');
+        }
+      })
+      .catch(error => {
+        console.error('❌ Error testing Mapbox token:', error);
+      });
+    
     mapboxgl.accessToken = token; // Set global access token
     setMapboxToken(token);
   }, []);
@@ -248,6 +271,7 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
   }, [queryClient]);
 
   useEffect(() => {
+    console.log('=== MAP DEBUGGING ===');
     console.log('Map effect triggered:', { 
       hasContainer: !!mapContainer.current, 
       servicesLength: services.length, 
@@ -255,23 +279,40 @@ const InteractiveMap: React.FC<InteractiveMapProps> = ({ onServiceClick }) => {
       token: mapboxToken ? `${mapboxToken.substring(0, 10)}...` : 'none'
     });
     
-    if (!mapContainer.current || !services.length || !mapboxToken) {
-      console.log('Map initialization skipped - missing requirements');
+    if (!mapContainer.current) {
+      console.log('❌ No map container');
+      return;
+    }
+    
+    if (!services.length) {
+      console.log('❌ No services data');
+      return;
+    }
+    
+    if (!mapboxToken) {
+      console.log('❌ No mapbox token');
       return;
     }
 
-    console.log('Initializing Mapbox map...');
+    console.log('✅ All requirements met, initializing map...');
+    console.log('mapboxgl object:', mapboxgl);
+    console.log('mapboxgl.accessToken:', mapboxgl.accessToken);
     
-    // Initialize map with proper configuration
-    map.current = new mapboxgl.Map({
-      container: mapContainer.current,
-      style: 'mapbox://styles/mapbox/streets-v12', // Use the latest streets style
-      center: [-118.2437, 34.0522], // Center on Los Angeles
-      zoom: 10, // Closer zoom for LA area
-      accessToken: mapboxToken
-    });
+    try {
+      // Initialize map with proper configuration
+      map.current = new mapboxgl.Map({
+        container: mapContainer.current,
+        style: 'mapbox://styles/mapbox/streets-v12', // Use the latest streets style
+        center: [-118.2437, 34.0522], // Center on Los Angeles
+        zoom: 10, // Closer zoom for LA area
+        accessToken: mapboxToken
+      });
 
-    console.log('Map created successfully');
+      console.log('✅ Map created successfully:', map.current);
+    } catch (error) {
+      console.error('❌ Error creating map:', error);
+      return;
+    }
 
     // Add navigation controls
     map.current.addControl(new mapboxgl.NavigationControl(), 'top-right');
