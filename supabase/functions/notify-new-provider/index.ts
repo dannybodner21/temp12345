@@ -35,7 +35,7 @@ const handler = async (req: Request): Promise<Response> => {
     // Send notification email to admin
     const emailResponse = await resend.emails.send({
       from: "Provider Notifications <onboarding@resend.dev>",
-      to: ["jaclyntroth@gmail.com"], // Replace with your admin email
+      to: ["dannybodner21@gmail.com"], // Replace with your admin email
       subject: "New Provider Signup - Verification Required",
       html: `
         <h1>New Provider Signup</h1>
